@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class TestController {
 
+
     @GetMapping("/")
     public String home() {
         return "KhataFlow Backend Running 🚀";
@@ -13,6 +14,6 @@ public class TestController {
 
     @GetMapping("/test")
     public String test() {
-        return "API Working ✅";
+        return "API Working ✅ NOW";
     }
 }

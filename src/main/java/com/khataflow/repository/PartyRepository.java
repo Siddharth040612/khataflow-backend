@@ -16,6 +16,7 @@ public interface PartyRepository extends JpaRepository<Party, Long>, JpaSpecific
 
     Optional<Party> findByIdAndStoreId(Long id, Long storeId);
 
+
     List<Party> findByStoreId(Long storeId);
 
     List<Party> findByStoreIdAndPartyType(Long storeId, PartyType partyType);

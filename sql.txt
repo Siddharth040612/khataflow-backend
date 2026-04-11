@@ -1,0 +1,26 @@
+-- Improve transaction queries
+CREATE INDEX IF NOT EXISTS idx_txn_store_party
+ON transactions(store_id, party_id);
+
+-- Improve sorting performance
+CREATE INDEX IF NOT EXISTS idx_transactions_created_at
+ON transactions(created_at DESC);
+
+-- Faster filtering
+CREATE INDEX IF NOT EXISTS idx_transactions_type
+ON transactions(type);
+
+-- Add bill_id to transactions
+ALTER TABLE transactions
+ADD COLUMN bill_id BIGINT;
+
+ALTER TABLE transactions
+ADD CONSTRAINT fk_bill
+FOREIGN KEY (bill_id) REFERENCES bills(id);
+
+-- ensure defaults
+ALTER TABLE users ALTER COLUMN is_deleted SET DEFAULT false;
+
+CREATE INDEX idx_users_store_id ON users(store_id);
+
+CREATE INDEX idx_store_phone ON stores(phone);

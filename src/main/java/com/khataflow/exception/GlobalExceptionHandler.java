@@ -15,4 +15,9 @@ public class GlobalExceptionHandler {
     public ApiResponse<?> handleGeneral(Exception ex) {
         return ApiResponse.error("Something went wrong");
     }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ApiResponse<?> handleNotFound(NotFoundException ex) {
+        return ApiResponse.error(ex.getMessage());
+    }
 }

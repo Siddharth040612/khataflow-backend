@@ -7,12 +7,12 @@ import com.khataflow.entity.Transaction;
 import com.khataflow.entity.TransactionType;
 import com.khataflow.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class TransactionService {
@@ -242,5 +242,67 @@ public class TransactionService {
 
         repository.save(txn);
     }
+    public Page<TransactionResponse> getTransactions(
+            Long storeId,
+            Long partyId,
+            int page,
+            int size
+    ) {
 
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        Page<Transaction> txnPage =
+                repository.findByStoreIdAndPartyIdAndIsDeletedFalse(
+                        storeId,
+                        partyId,
+                        pageable
+                );
+
+        List<Transaction> allTxns =
+                repository.findByStoreIdAndPartyIdAndIsDeletedFalseOrderByCreatedAtDesc(
+                        storeId,
+                        partyId
+                );
+
+        Map<Long, Double> balanceMap = new HashMap<>();
+
+        double balance = 0;
+
+        for (Transaction t : allTxns) {
+            if (t.getType() == TransactionType.CREDIT) {
+                balance += t.getAmount();
+            } else {
+                balance -= t.getAmount();
+            }
+            balanceMap.put(t.getId(), balance);
+        }
+
+        // 🔹 Step 4: Map paginated result + inject balance
+        return txnPage.map(t -> {
+            TransactionResponse res = mapToResponse(t);
+            res.setRunningBalance(balanceMap.get(t.getId()));
+            return res;
+        });
+    }
+
+    private TransactionResponse mapToResponse(Transaction t) {
+        return new TransactionResponse(
+                t.getId(),
+                t.getPartyId(),
+                null, // partyName if needed
+                t.getType(),
+                t.getAmount(),
+                t.getBillNumber(),
+                null, // billUrl (already handled elsewhere)
+                t.getDescription(),
+                t.getCreatedAt(),
+                t.getCreatedBy(),
+                null,
+                null // runningBalance (we'll improve later)
+        );
+    }
 }

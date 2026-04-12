@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.*;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
@@ -110,5 +111,24 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<TransactionResponse> getTransactionsWithFileurl(
             @Param("storeId") Long storeId,
             @Param("partyId") Long partyId
+    );
+
+    @Query("""
+        SELECT t, b FROM Transaction t
+        LEFT JOIN Bill b ON t.billId = b.id
+        WHERE t.storeId = :storeId
+        AND t.partyId = :partyId
+        AND t.isDeleted = false
+        ORDER BY t.createdAt DESC
+    """)
+    List<Object[]> findTransactionsWithBills(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId
+    );
+
+    Page<Transaction> findByStoreIdAndPartyIdAndIsDeletedFalse(
+            Long storeId,
+            Long partyId,
+            Pageable pageable
     );
 }

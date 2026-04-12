@@ -6,6 +6,7 @@ import com.khataflow.dto.TransactionRequest;
 import com.khataflow.dto.TransactionResponse;
 import com.khataflow.entity.Transaction;
 import com.khataflow.service.TransactionService;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -72,5 +73,21 @@ public class TransactionController {
     ) {
         service.delete(id, storeId);
         return ApiResponse.successMessage("Transaction deleted successfully");
+    }
+
+    @GetMapping("/grouped")
+    public ApiResponse<Page<TransactionResponse>> getTransactions(
+            @RequestParam Long storeId,
+            @RequestParam Long partyId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+
+        return new ApiResponse<>(
+                true,
+                service.getTransactions(storeId, partyId, page, size),
+                null,
+                null
+        );
     }
 }

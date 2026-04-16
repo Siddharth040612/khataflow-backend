@@ -24,3 +24,4 @@ ALTER TABLE users ALTER COLUMN is_deleted SET DEFAULT false;
 CREATE INDEX idx_users_store_id ON users(store_id);
 
 CREATE INDEX idx_store_phone ON stores(phone);
+-- Deploying

@@ -268,11 +268,17 @@ public class TransactionService {
                         partyId
                 );
 
+        List<TransactionResponse> allTxnsWithUrl =
+                repository.getTransactionsWithFileurl(
+                        storeId,
+                        partyId
+                );
+
         Map<Long, Double> balanceMap = new HashMap<>();
 
         double balance = 0;
 
-        for (Transaction t : allTxns) {
+        for (TransactionResponse t : allTxnsWithUrl) {
             if (t.getType() == TransactionType.CREDIT) {
                 balance += t.getAmount();
             } else {
@@ -281,12 +287,22 @@ public class TransactionService {
             balanceMap.put(t.getId(), balance);
         }
 
+        for (TransactionResponse t : allTxnsWithUrl) {
+            t.setRunningBalance(balanceMap.get(t.getId()));
+        }
+
         // 🔹 Step 4: Map paginated result + inject balance
-        return txnPage.map(t -> {
-            TransactionResponse res = mapToResponse(t);
-            res.setRunningBalance(balanceMap.get(t.getId()));
-            return res;
-        });
+//        return txnPage.map(t -> {
+//            TransactionResponse res = mapToResponse(t);
+//            res.setRunningBalance(balanceMap.get(t.getId()));
+//            return res;
+//        });
+
+        return new PageImpl<>(
+                allTxnsWithUrl,
+                pageable,
+                allTxnsWithUrl.size()
+        );
     }
 
     private TransactionResponse mapToResponse(Transaction t) {

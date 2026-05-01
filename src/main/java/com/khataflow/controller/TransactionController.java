@@ -69,8 +69,12 @@ public class TransactionController {
     @DeleteMapping("/{id}")
     public ApiResponse<Void> delete(
             @PathVariable Long id,
+            @RequestHeader String role,
             @RequestParam Long storeId
     ) {
+        if (!"ADMIN".equals(role)) {
+            throw new RuntimeException("Only admin can delete");
+        }
         service.delete(id, storeId);
         return ApiResponse.successMessage("Transaction deleted successfully");
     }

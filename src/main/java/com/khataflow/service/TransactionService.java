@@ -298,13 +298,124 @@ public class TransactionService {
 //            return res;
 //        });
 
-        return new PageImpl<>(
-                allTxnsWithUrl,
-                pageable,
-                allTxnsWithUrl.size()
-        );
+//        return new PageImpl<>(
+//                allTxnsWithUrl,
+//                pageable,
+//                allTxnsWithUrl.size()
+//        );
+        return txnPage.map(t -> {
+            TransactionResponse res = mapToResponse(t);
+
+            // 🔥 inject running balance
+            Double runningBalance = balanceMap.get(t.getId());
+            res.setRunningBalance(runningBalance);
+
+            // 🔥 also set billUrl if needed
+            Optional<TransactionResponse> full =
+                    allTxnsWithUrl.stream()
+                            .filter(x -> x.getId().equals(t.getId()))
+                            .findFirst();
+
+            full.ifPresent(f -> {
+                res.setBillUrl(f.getBillUrl());
+                res.setPartyName(f.getPartyName());
+            });
+
+            return res;
+        });
     }
 
+    public Page<TransactionResponse> getGroupedTransactions(
+            Long storeId,
+            Long partyId,
+            String fromDate,
+            String toDate,
+            int page,
+            int size
+    ) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        // ✅ FILTER + PAGINATION IN DB
+        Page<Transaction> txnPage;
+
+        if (fromDate != null && toDate != null) {
+            LocalDateTime from = LocalDate.parse(fromDate).atStartOfDay();
+            LocalDateTime to = LocalDate.parse(toDate).atTime(23, 59, 59);
+
+            txnPage = repository.findFilteredTransactionsPaged(
+                    storeId,
+                    partyId,
+                    from,
+                    to,
+                    pageable
+            );
+        } else {
+            txnPage = repository.findByStoreIdAndPartyIdAndIsDeletedFalse(
+                    storeId,
+                    partyId,
+                    pageable
+            );
+        }
+
+        // ✅ Fetch only needed IDs (NOT full table)
+        List<Long> ids = txnPage.getContent().stream()
+                .map(Transaction::getId)
+                .toList();
+
+        List<TransactionResponse> txnsWithUrl =
+                repository.getTransactionsWithFileurl(storeId, partyId)
+                        .stream()
+                        .filter(t -> ids.contains(t.getId()))
+                        .toList();
+
+        // ✅ Running balance (still full list needed)
+        List<TransactionResponse> fullList =
+                repository.getTransactionsWithFileurl(storeId, partyId);
+
+        Map<Long, Double> balanceMap = new HashMap<>();
+        double balance = 0;
+
+        for (TransactionResponse t : fullList) {
+            if (t.getType() == TransactionType.CREDIT) {
+                balance += t.getAmount();
+            } else {
+                balance -= t.getAmount();
+            }
+            balanceMap.put(t.getId(), balance);
+        }
+
+        return txnPage.map(t -> {
+            TransactionResponse res = new TransactionResponse(
+                    t.getId(),
+                    t.getPartyId(),
+                    null,
+                    t.getType(),
+                    t.getAmount(),
+                    t.getBillNumber(),
+                    null,
+                    t.getDescription(),
+                    t.getCreatedAt(),
+                    t.getCreatedBy(),
+                    null,
+                    balanceMap.get(t.getId())
+            );
+
+            txnsWithUrl.stream()
+                    .filter(x -> x.getId().equals(t.getId()))
+                    .findFirst()
+                    .ifPresent(x -> {
+                        res.setBillUrl(x.getBillUrl());
+                        res.setPartyName(x.getPartyName());
+                    });
+
+            return res;
+        });
+    }
     private TransactionResponse mapToResponse(Transaction t) {
         return new TransactionResponse(
                 t.getId(),

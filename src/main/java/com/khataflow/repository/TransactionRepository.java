@@ -126,6 +126,23 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
             @Param("partyId") Long partyId
     );
 
+    @Query("""
+SELECT t FROM Transaction t
+WHERE t.storeId = :storeId
+AND t.partyId = :partyId
+AND t.isDeleted = false
+AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
+AND (:toDate IS NULL OR t.createdAt <= :toDate)
+ORDER BY t.createdAt DESC
+""")
+    Page<Transaction> findFilteredTransactionsPaged(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
+
     Page<Transaction> findByStoreIdAndPartyIdAndIsDeletedFalse(
             Long storeId,
             Long partyId,

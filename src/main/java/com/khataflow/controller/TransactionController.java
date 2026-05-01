@@ -79,13 +79,15 @@ public class TransactionController {
     public ApiResponse<Page<TransactionResponse>> getTransactions(
             @RequestParam Long storeId,
             @RequestParam Long partyId,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
 
         return new ApiResponse<>(
                 true,
-                service.getTransactions(storeId, partyId, page, size),
+                service.getGroupedTransactions(storeId, partyId, fromDate, toDate, page, size),
                 null,
                 null
         );

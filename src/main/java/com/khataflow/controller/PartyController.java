@@ -3,7 +3,9 @@ package com.khataflow.controller;
 import com.khataflow.common.ApiResponse;
 import com.khataflow.dto.PartyUpdateRequest;
 import com.khataflow.entity.Party;
+import com.khataflow.entity.PartyType;
 import com.khataflow.service.PartyService;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,14 +34,19 @@ public class PartyController {
 
     // ✅ SEARCH
     @GetMapping("/search")
-    public ApiResponse<List<Party>> search(
+    public ApiResponse<Page<Party>> search(
             @RequestParam Long storeId,
             @RequestParam(required = false) String name,
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) String externalId,
-            @RequestParam(required = false) Long id
+            @RequestParam(required = false) Long id,
+            @RequestParam(required = false) PartyType partyType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
     ) {
-        return ApiResponse.success(service.search(storeId, name, phone, externalId, id));
+        return ApiResponse.success(
+                service.search(storeId, name, phone, externalId, id, partyType, page, size)
+        );
     }
 
     // ✅ UPDATE

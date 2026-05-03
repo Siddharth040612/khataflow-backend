@@ -2,6 +2,7 @@ package com.khataflow.repository;
 
 import com.khataflow.entity.Party;
 import com.khataflow.entity.PartyType;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,10 @@ public interface PartyRepository extends JpaRepository<Party, Long>, JpaSpecific
 
     List<Party> findByStoreIdAndNameContainingIgnoreCase(Long storeId, String name);
 
+    @Query("""
+        SELECT p FROM Party p
+        WHERE p.storeId = :storeId
+        ORDER BY p.updatedAt DESC
+    """)
+    List<Party> findRecentParties(@Param("storeId") Long storeId, Pageable pageable);
 }

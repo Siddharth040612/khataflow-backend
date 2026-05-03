@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.*;
+import com.khataflow.dto.RecentTransaction;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
@@ -148,4 +149,36 @@ ORDER BY t.createdAt DESC
             Long partyId,
             Pageable pageable
     );
+
+    @Query("""
+        SELECT COALESCE(SUM(CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE 0 END), 0)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.isDeleted = false
+    """)
+    Double getTotalReceivable(@Param("storeId") Long storeId);
+
+    @Query("""
+        SELECT COALESCE(SUM(CASE WHEN t.type = 'PAYMENT' THEN t.amount ELSE 0 END), 0)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.isDeleted = false
+    """)
+    Double getTotalPayable(@Param("storeId") Long storeId);
+
+    @Query("""
+        SELECT new com.khataflow.dto.RecentTransaction(
+            t.id,
+            p.name,
+            t.amount,
+            t.type,
+            t.createdAt
+        )
+        FROM Transaction t
+        JOIN Party p ON t.partyId = p.id
+        WHERE t.storeId = :storeId
+        AND t.isDeleted = false
+        ORDER BY t.createdAt DESC
+    """)
+    List<RecentTransaction> findRecentTransactions(@Param("storeId") Long storeId, Pageable pageable);
 }

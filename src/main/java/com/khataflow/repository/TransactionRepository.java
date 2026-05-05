@@ -181,4 +181,70 @@ ORDER BY t.createdAt DESC
         ORDER BY t.createdAt DESC
     """)
     List<RecentTransaction> findRecentTransactions(@Param("storeId") Long storeId, Pageable pageable);
+
+    @Query("""
+        SELECT 
+            COALESCE(SUM(CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN t.type = 'PAYMENT' THEN t.amount ELSE 0 END), 0),
+            COUNT(*)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.isDeleted = false
+        AND t.createdAt >= :startDate
+        AND t.createdAt <= :endDate
+    """)
+    Object[] getTransactionSummaryByDateRange(
+            @Param("storeId") Long storeId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    @Query("""
+        SELECT 
+            COALESCE(SUM(CASE WHEN t.type = 'CREDIT' THEN t.amount ELSE 0 END), 0),
+            COALESCE(SUM(CASE WHEN t.type = 'PAYMENT' THEN t.amount ELSE 0 END), 0),
+            COUNT(t)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.partyId = :partyId
+        AND t.isDeleted = false
+    """)
+    Object[] getPartyStats(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId
+    );
+
+    @Query("""
+        SELECT MAX(t.createdAt)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.partyId = :partyId
+        AND t.isDeleted = false
+    """)
+    LocalDateTime getLastTransactionDate(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId
+    );
+
+    @Query(value = """
+        SELECT p.id, p.name, COUNT(t.id) as transactionCount
+        FROM parties p
+        LEFT JOIN transactions t ON p.id = t.party_id 
+            AND t.store_id = :storeId 
+            AND t.is_deleted = false
+        WHERE p.store_id = :storeId
+        GROUP BY p.id, p.name
+        ORDER BY transactionCount DESC
+        LIMIT 5
+    """, nativeQuery = true)
+    List<Object[]> findFrequentParties(@Param("storeId") Long storeId);
+
+    @Query("""
+        SELECT COUNT(DISTINCT t.partyId)
+        FROM Transaction t
+        WHERE t.storeId = :storeId
+        AND t.isDeleted = false
+    """)
+    Long countActiveParties(@Param("storeId") Long storeId);
 }
+

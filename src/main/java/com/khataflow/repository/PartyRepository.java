@@ -30,4 +30,24 @@ public interface PartyRepository extends JpaRepository<Party, Long>, JpaSpecific
         ORDER BY p.updatedAt DESC
     """)
     List<Party> findRecentParties(@Param("storeId") Long storeId, Pageable pageable);
+
+    @Query("""
+        SELECT p FROM Party p
+        WHERE p.storeId = :storeId
+        ORDER BY (
+            SELECT MAX(t.createdAt)
+            FROM Transaction t
+            WHERE t.partyId = p.id
+            AND t.storeId = :storeId
+            AND t.isDeleted = false
+        ) DESC NULLS LAST
+    """)
+    List<Party> findPartiesByLastTransactionDate(@Param("storeId") Long storeId, Pageable pageable);
+
+    @Query("""
+        SELECT COUNT(p)
+        FROM Party p
+        WHERE p.storeId = :storeId
+    """)
+    long countByStoreId(@Param("storeId") Long storeId);
 }

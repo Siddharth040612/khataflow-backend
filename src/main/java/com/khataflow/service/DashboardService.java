@@ -1,6 +1,7 @@
 package com.khataflow.service;
 
 import com.khataflow.dto.DashboardResponse;
+import com.khataflow.dto.DashboardSummaryResponse;
 import com.khataflow.dto.RecentParty;
 import com.khataflow.dto.RecentTransaction;
 import com.khataflow.entity.Party;
@@ -49,4 +50,21 @@ public class DashboardService {
 
         return new DashboardResponse(totalReceivable, totalPayable, netBalance, recentTransactions, recentParties);
     }
+
+    public DashboardSummaryResponse getDashboardSummary(Long storeId) {
+        double totalReceivable = transactionRepository.getTotalReceivable(storeId);
+        double totalPayable = transactionRepository.getTotalPayable(storeId);
+        double netBalance = totalReceivable - totalPayable;
+        long totalParties = partyRepository.countByStoreId(storeId);
+        long activeParties = transactionRepository.countActiveParties(storeId);
+
+        return new DashboardSummaryResponse(
+                totalReceivable,
+                totalPayable,
+                netBalance,
+                totalParties,
+                activeParties
+        );
+    }
 }
+

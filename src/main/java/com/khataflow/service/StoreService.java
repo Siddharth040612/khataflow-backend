@@ -1,6 +1,7 @@
 package com.khataflow.service;
 
 import com.khataflow.dto.CreateStoreRequest;
+import com.khataflow.dto.StoreResponse;
 import com.khataflow.entity.*;
 import com.khataflow.repository.StoreRepository;
 import com.khataflow.repository.UserRepository;
@@ -43,5 +44,20 @@ public class StoreService {
         userRepository.save(user);
 
         return savedStore.getId();
+    }
+
+    public StoreResponse getStoreDetails(Long storeId) {
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("Store not found"));
+
+        return new StoreResponse(
+                store.getId(),
+                store.getName(),
+                store.getPhone(),
+                store.getUpiId(),
+                store.getCurrency(),
+                store.getIsActive(),
+                store.getCreatedAt()
+        );
     }
 }

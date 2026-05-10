@@ -11,6 +11,7 @@ import org.springframework.data.domain.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -345,7 +346,7 @@ public class TransactionService {
 
         if (fromDate != null && toDate != null) {
             LocalDateTime from = LocalDate.parse(fromDate).atStartOfDay();
-            LocalDateTime to = LocalDate.parse(toDate).atTime(23, 59, 59);
+            LocalDateTime to = LocalDate.parse(toDate).atTime(LocalTime.MAX);
 
             txnPage = repository.findFilteredTransactionsPaged(
                     storeId,

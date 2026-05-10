@@ -132,8 +132,8 @@ SELECT t FROM Transaction t
 WHERE t.storeId = :storeId
 AND t.partyId = :partyId
 AND t.isDeleted = false
-AND (:fromDate IS NULL OR t.createdAt >= :fromDate)
-AND (:toDate IS NULL OR t.createdAt <= :toDate)
+AND t.createdAt >= :fromDate
+AND t.createdAt <= :toDate
 ORDER BY t.createdAt DESC
 """)
     Page<Transaction> findFilteredTransactionsPaged(

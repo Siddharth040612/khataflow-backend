@@ -37,9 +37,14 @@ public class PartyInsightService {
                     double credit = 0.0;
                     double payment = 0.0;
 
-                    if (balanceResult != null && balanceResult.length >= 2) {
-                        credit = balanceResult[0] != null ? ((Number) balanceResult[0]).doubleValue() : 0.0;
-                        payment = balanceResult[1] != null ? ((Number) balanceResult[1]).doubleValue() : 0.0;
+                    Object[] row = balanceResult;
+                    if (balanceResult != null && balanceResult.length > 0 && balanceResult[0] instanceof Object[]) {
+                        row = (Object[]) balanceResult[0];
+                    }
+
+                    if (row != null && row.length >= 2) {
+                        credit = row[0] != null ? ((Number) row[0]).doubleValue() : 0.0;
+                        payment = row[1] != null ? ((Number) row[1]).doubleValue() : 0.0;
                     }
 
                     double balance = credit - payment;
@@ -68,9 +73,14 @@ public class PartyInsightService {
                     double credit = 0.0;
                     double payment = 0.0;
 
-                    if (balanceResult != null && balanceResult.length >= 2) {
-                        credit = balanceResult[0] != null ? ((Number) balanceResult[0]).doubleValue() : 0.0;
-                        payment = balanceResult[1] != null ? ((Number) balanceResult[1]).doubleValue() : 0.0;
+                    Object[] r = balanceResult;
+                    if (balanceResult != null && balanceResult.length > 0 && balanceResult[0] instanceof Object[]) {
+                        r = (Object[]) balanceResult[0];
+                    }
+
+                    if (r != null && r.length >= 2) {
+                        credit = r[0] != null ? ((Number) r[0]).doubleValue() : 0.0;
+                        payment = r[1] != null ? ((Number) r[1]).doubleValue() : 0.0;
                     }
 
                     double balance = credit - payment;

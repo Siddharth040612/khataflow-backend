@@ -227,7 +227,8 @@ ORDER BY t.createdAt DESC
     );
 
     @Query(value = """
-        SELECT p.id, p.name, COUNT(t.id) as transactionCount
+        SELECT p.id, p.name, COUNT(t.id) as transactionCount,
+              p.phone
         FROM parties p
         LEFT JOIN transactions t ON p.id = t.party_id 
             AND t.store_id = :storeId 

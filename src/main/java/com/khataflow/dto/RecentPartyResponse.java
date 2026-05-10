@@ -14,5 +14,6 @@ public class RecentPartyResponse {
     private Long id;
     private String name;
     private Double balance;
+    private String phone;
     private LocalDateTime lastTransactionAt;
 }

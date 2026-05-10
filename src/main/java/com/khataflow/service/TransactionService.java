@@ -342,13 +342,13 @@ public class TransactionService {
         );
 
         // ✅ FILTER + PAGINATION IN DB
-        Page<Transaction> txnPage;
+        Page<TransactionResponse> txnPage;
 
         if (fromDate != null && toDate != null) {
             LocalDateTime from = LocalDate.parse(fromDate).atStartOfDay();
             LocalDateTime to = LocalDate.parse(toDate).atTime(LocalTime.MAX);
 
-            txnPage = repository.findFilteredTransactionsPaged(
+            txnPage = repository.findFilteredTransactionsResponsePaged(
                     storeId,
                     partyId,
                     from,
@@ -356,25 +356,13 @@ public class TransactionService {
                     pageable
             );
         } else {
-            txnPage = repository.findByStoreIdAndPartyIdAndIsDeletedFalse(
+            txnPage = repository.findTransactionsResponsePaged(
                     storeId,
                     partyId,
                     pageable
             );
         }
 
-        // ✅ Fetch only needed IDs (NOT full table)
-        List<Long> ids = txnPage.getContent().stream()
-                .map(Transaction::getId)
-                .toList();
-
-        List<TransactionResponse> txnsWithUrl =
-                repository.getTransactionsWithFileurl(storeId, partyId)
-                        .stream()
-                        .filter(t -> ids.contains(t.getId()))
-                        .toList();
-
-        // ✅ Running balance (still full list needed)
         List<TransactionResponse> fullList =
                 repository.getTransactionsWithFileurl(storeId, partyId);
 
@@ -391,30 +379,8 @@ public class TransactionService {
         }
 
         return txnPage.map(t -> {
-            TransactionResponse res = new TransactionResponse(
-                    t.getId(),
-                    t.getPartyId(),
-                    null,
-                    t.getType(),
-                    t.getAmount(),
-                    t.getBillNumber(),
-                    null,
-                    t.getDescription(),
-                    t.getCreatedAt(),
-                    t.getCreatedBy(),
-                    null,
-                    balanceMap.get(t.getId())
-            );
-
-            txnsWithUrl.stream()
-                    .filter(x -> x.getId().equals(t.getId()))
-                    .findFirst()
-                    .ifPresent(x -> {
-                        res.setBillUrl(x.getBillUrl());
-                        res.setPartyName(x.getPartyName());
-                    });
-
-            return res;
+            t.setRunningBalance(balanceMap.get(t.getId()));
+            return t;
         });
     }
     private TransactionResponse mapToResponse(Transaction t) {

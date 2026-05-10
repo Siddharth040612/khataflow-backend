@@ -53,6 +53,7 @@ public class PartyInsightService {
                             party.getId(),
                             party.getName(),
                             balance,
+                            party.getPhone(),
                             lastTransactionDate
                     );
                 })
@@ -66,6 +67,7 @@ public class PartyInsightService {
                 .map(row -> {
                     Long partyId = ((Number) row[0]).longValue();
                     String partyName = (String) row[1];
+                    String partyPhone = (String) row[3];
                     Long transactionCount = ((Number) row[2]).longValue();
 
                     // Get party balance
@@ -89,6 +91,7 @@ public class PartyInsightService {
                             partyId,
                             partyName,
                             balance,
+                            partyPhone,
                             transactionCount
                     );
                 })

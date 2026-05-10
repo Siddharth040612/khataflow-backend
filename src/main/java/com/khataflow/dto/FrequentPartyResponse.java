@@ -12,5 +12,6 @@ public class FrequentPartyResponse {
     private Long id;
     private String name;
     private Double balance;
+    private String phone;
     private Long transactionCount;
 }

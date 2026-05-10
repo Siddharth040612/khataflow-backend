@@ -246,5 +246,69 @@ ORDER BY t.createdAt DESC
         AND t.isDeleted = false
     """)
     Long countActiveParties(@Param("storeId") Long storeId);
+
+    @Query("""
+SELECT new com.khataflow.dto.TransactionResponse(
+    t.id,
+    p.id,
+    p.name,
+    t.type,
+    t.amount,
+    t.billNumber,
+    b.fileUrl,
+    t.description,
+    t.createdAt,
+    t.createdBy,
+    u.name,
+    null
+)
+FROM Transaction t
+JOIN Party p ON t.partyId = p.id
+LEFT JOIN User u ON t.createdBy = u.id
+LEFT JOIN Bill b ON t.billId = b.id
+WHERE t.storeId = :storeId
+AND (:partyId IS NULL OR t.partyId = :partyId)
+AND t.isDeleted = false
+AND t.createdAt >= :fromDate
+AND t.createdAt <= :toDate
+ORDER BY t.createdAt DESC
+""")
+    Page<TransactionResponse> findFilteredTransactionsResponsePaged(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId,
+            @Param("fromDate") LocalDateTime fromDate,
+            @Param("toDate") LocalDateTime toDate,
+            Pageable pageable
+    );
+
+    @Query("""
+SELECT new com.khataflow.dto.TransactionResponse(
+    t.id,
+    p.id,
+    p.name,
+    t.type,
+    t.amount,
+    t.billNumber,
+    b.fileUrl,
+    t.description,
+    t.createdAt,
+    t.createdBy,
+    u.name,
+    null
+)
+FROM Transaction t
+JOIN Party p ON t.partyId = p.id
+LEFT JOIN User u ON t.createdBy = u.id
+LEFT JOIN Bill b ON t.billId = b.id
+WHERE t.storeId = :storeId
+AND (:partyId IS NULL OR t.partyId = :partyId)
+AND t.isDeleted = false
+ORDER BY t.createdAt DESC
+""")
+    Page<TransactionResponse> findTransactionsResponsePaged(
+            @Param("storeId") Long storeId,
+            @Param("partyId") Long partyId,
+            Pageable pageable
+    );
 }
 

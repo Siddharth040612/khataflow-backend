@@ -82,7 +82,7 @@ public class TransactionController {
     @GetMapping("/grouped")
     public ApiResponse<Page<TransactionResponse>> getTransactions(
             @RequestParam Long storeId,
-            @RequestParam Long partyId,
+            @RequestParam(required = false) Long partyId,
             @RequestParam(required = false) String fromDate,
             @RequestParam(required = false) String toDate,
             @RequestParam(defaultValue = "0") int page,

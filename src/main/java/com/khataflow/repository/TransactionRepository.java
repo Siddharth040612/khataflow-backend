@@ -130,7 +130,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("""
 SELECT t FROM Transaction t
 WHERE t.storeId = :storeId
-AND t.partyId = :partyId
+AND (:partyId IS NULL OR t.partyId = :partyId)
 AND t.isDeleted = false
 AND t.createdAt >= :fromDate
 AND t.createdAt <= :toDate

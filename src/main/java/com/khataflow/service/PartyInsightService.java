@@ -76,6 +76,8 @@ public class PartyInsightService {
                     double payment = 0.0;
 
                     Object[] r = balanceResult;
+
+
                     if (balanceResult != null && balanceResult.length > 0 && balanceResult[0] instanceof Object[]) {
                         r = (Object[]) balanceResult[0];
                     }
